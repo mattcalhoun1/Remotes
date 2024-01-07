@@ -1,4 +1,8 @@
+#include <Arduino.h>
+#include <stdint.h>
 #include "Display.h"
+//#include "Display_1306.h"
+#include "Display_1331.h"
 #include "Joystick.h"
 #include "LoRaTrans.h"
 
@@ -21,7 +25,7 @@ void setup() {
   delay(100);
 
   lora = new LoRaTrans();
-  display = new Display();
+  display = new Display_1331();
   joystick = new Joystick(VRX_PIN, VRY_PIN, SW_PIN);
 }
 
@@ -30,34 +34,37 @@ void loop() {
     JoystickDirection direction = joystick->getDirection();
     display->clear();
     display->showSymbol(getDirectionSymbol(direction), 60, 20);
-    display->showText("X: " + String(joystick->getX()), 10, 5, TextSmall);
-    display->showText("Y: " + String(joystick->getY()), 10, 15, TextSmall);
+    display->showText("X: " + String(joystick->getX()), 10, 5, TextSmall, Green);
+    display->showText("Y: " + String(joystick->getY()), 10, 15, TextSmall, Yellow);
 
     if (joystick->isPressed()) {
-      display->showText("*", 96, 10, TextLarge);
+      display->showText("*", 96, 10, TextLarge, Red);
+      if (lora->send("this is mkrzero", LORA_ADDR_SPOTTER)) {
+        logConsole("Message sent to spotter");
+      }
     }
 
     display->repaint();
   }
 
+  
   if (lora->hasMessage()) {
     int messageLength = lora->retrieveMessage();
     display->showText("LORA (" + String(messageLength) + ")", 10, 25, TextSmall);
     display->repaint();
     logConsole("LORA message size: " + String(messageLength) + "!!");
+    logConsole("LORA message: " + String((char*)lora->getMessageBuffer()));
   }
-  else {
+  /*else {
     logConsole("No Lora");
-    /*if(lora->broadcast("something")) {
-      logConsole("broadcast successful");
-    }*/
     if (lora->send("this is mkrzero", LORA_ADDR_SPOTTER)) {
       logConsole("Message sent to spotter");
     }
   }
+  */
 
 
-  delay(1000);
+  delay(100);
 }
 
 int getDirectionSymbol (JoystickDirection direction) {

@@ -20,4 +20,22 @@
 #define LORA_ADDR_ACTOR 2
 #define LORA_ADDR_BROADCAST 255
 
+// 1331 pins: sckl (SCL); mosi (SDA); cs(CS); rst (RES); dc (DC)
+#define Display_1331_SCLK 12
+#define Display_1331_MOSI 11
+#define Display_1331_CS   6
+#define Display_1331_RST  1
+#define Display_1331_DC   3
+
+
+// Color definitions
+#define	BLACK           0x0000
+#define	BLUE            0x001F
+#define	RED             0xF800
+#define	GREEN           0x07E0
+#define CYAN            0x07FF
+#define MAGENTA         0xF81F
+#define YELLOW          0xFFE0
+#define WHITE           0xFFFF
+
 #endif

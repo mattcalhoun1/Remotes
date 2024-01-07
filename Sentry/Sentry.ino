@@ -1,14 +1,26 @@
 #include "Display.h"
 #include "Joystick.h"
+#include "LoRaTrans.h"
 
 Display* display;
 Joystick* joystick;
+LoRaTrans* lora;
 
 void setup() {
-  while (!Serial) delay(10);
+  long start = millis();
+  // if log enabled, wait up to 5 sec for serial to become available
+  if (LOG_ENABLED) {
+    while (!Serial) {
+      if (start + 5000 < millis()) {
+        break;
+      }
+      delay(10);
+    } 
+  }
   Serial.begin(115200);
   delay(100);
 
+  lora = new LoRaTrans();
   display = new Display();
   joystick = new Joystick(VRX_PIN, VRY_PIN, SW_PIN);
 }
@@ -27,6 +39,22 @@ void loop() {
 
     display->repaint();
   }
+
+  if (lora->hasMessage()) {
+    display->showText("LORA!", 10, 25, TextSmall);
+    display->repaint();
+    logConsole("LORA!!");
+  }
+  else {
+    logConsole("No Lora");
+    if(lora->broadcast("something")) {
+      logConsole("broadcast successful");
+    }
+    else {
+      logConsole("broadcast NOT successful");
+    }
+  }
+
 
   delay(100);
 }

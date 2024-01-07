@@ -41,22 +41,23 @@ void loop() {
   }
 
   if (lora->hasMessage()) {
-    display->showText("LORA!", 10, 25, TextSmall);
+    int messageLength = lora->retrieveMessage();
+    display->showText("LORA (" + String(messageLength) + ")", 10, 25, TextSmall);
     display->repaint();
-    logConsole("LORA!!");
+    logConsole("LORA message size: " + String(messageLength) + "!!");
   }
   else {
     logConsole("No Lora");
-    if(lora->broadcast("something")) {
+    /*if(lora->broadcast("something")) {
       logConsole("broadcast successful");
-    }
-    else {
-      logConsole("broadcast NOT successful");
+    }*/
+    if (lora->send("this is mkrzero", LORA_ADDR_SPOTTER)) {
+      logConsole("Message sent to spotter");
     }
   }
 
 
-  delay(100);
+  delay(1000);
 }
 
 int getDirectionSymbol (JoystickDirection direction) {

@@ -23,6 +23,7 @@ enum DisplayColor {
 class Display {
   public:
     virtual void showThermal (float* frame, int resHeight, int resWidth, int xOffset, int yOffset) = 0;
+    virtual void showThermal (uint8_t* frame, int resHeight, int resWidth, int xOffset, int yOffset) = 0;
     virtual void showText (String text, int x, int y, TextSize size) = 0;
     virtual void showSymbol (int gfxChar, int x, int y) = 0;
     virtual void showText (String text, int x, int y, TextSize size, DisplayColor color) = 0;

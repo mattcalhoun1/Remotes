@@ -33,9 +33,10 @@ void loop() {
   if(joystick->refresh()) {
     JoystickDirection direction = joystick->getDirection();
     display->clear();
+    display->showText("Ok", DISPLAY_STATUS_X, DISPLAY_STATUS_Y, TextSmall, Blue);
     display->showSymbol(getDirectionSymbol(direction), 60, 20);
-    display->showText("X: " + String(joystick->getX()), 10, 5, TextSmall, Green);
-    display->showText("Y: " + String(joystick->getY()), 10, 15, TextSmall, Yellow);
+    //display->showText("X: " + String(joystick->getX()), 10, 5, TextSmall, Green);
+    //display->showText("Y: " + String(joystick->getY()), 10, 15, TextSmall, Yellow);
 
     if (joystick->isPressed()) {
       display->showText("*", 96, 10, TextLarge, Red);
@@ -47,13 +48,26 @@ void loop() {
     display->repaint();
   }
 
-  
   if (lora->hasMessage()) {
+    display->clear();
+    display->showText("Receiving...", DISPLAY_STATUS_X, DISPLAY_STATUS_Y, TextSmall, Blue);
     int messageLength = lora->retrieveMessage();
-    display->showText("LORA (" + String(messageLength) + ")", 10, 25, TextSmall);
-    display->repaint();
     logConsole("LORA message size: " + String(messageLength) + "!!");
-    logConsole("LORA message: " + String((char*)lora->getMessageBuffer()));
+    //display->showText("LORA (" + String(messageLength) + ")", 10, 25, TextSmall);
+    
+    if (messageLength > 0) {
+      // if it's a therml image, render it
+      if (lora->getChunkInBufferTime() > lora->getMessageBufferTime()) {
+        display->clear();
+        display->showText("Thermal", DISPLAY_STATUS_X, DISPLAY_STATUS_Y, TextSmall, Blue);
+        display->showThermal(lora->getChunkInBuffer(), THERMAL_HEIGHT,THERMAL_WIDTH, 32, 0);
+        display->repaint();
+      }
+      else { //  maybe it's just a string
+        logConsole("LORA message: " + String((char*)lora->getMessageBuffer()));
+      }
+    }
+
   }
   /*else {
     logConsole("No Lora");

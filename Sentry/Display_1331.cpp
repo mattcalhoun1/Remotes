@@ -52,6 +52,44 @@ void Display_1331::showThermal (float* frame, int resHeight, int resWidth, int x
   }
 }
 
+void Display_1331::showThermal (uint8_t* frame, int resHeight, int resWidth, int xOffset, int yOffset) {
+  int hotThreshold = 27;
+
+  for (uint8_t h=0; h<resHeight; h++) {
+    for (uint8_t w=0; w<resWidth; w++) {
+      uint8_t t = frame[h*resWidth + w];
+      display->drawPixel(xOffset + w, yOffset + h, get1331Color(getTemperatureColor(t)));
+    }
+  }
+}
+
+DisplayColor Display_1331::getTemperatureColor(uint8_t temperature) {
+  if (temperature < 20) {
+    return Black;
+  }
+  else if (temperature < 23) {
+    return Blue;
+  }
+  else if (temperature < 25) {
+    return Green;
+  }
+  else if (temperature < 27) {
+    return Cyan;
+  }
+  else if (temperature < 29) {
+    return Magenta;
+  }
+  else if (temperature < 31) {
+    return Yellow;
+  }
+  else if (temperature < 37) {
+    return Red;
+  }
+  else {
+    return White;
+  }
+}
+
 uint16_t Display_1331::get1331Color(DisplayColor color) {
   switch (color) {
     case Black:

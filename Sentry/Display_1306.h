@@ -17,6 +17,7 @@ class Display_1306 : public Display {
   public:
     Display_1306 ();
     virtual void showThermal (float* frame, int resHeight, int resWidth, int xOffset, int yOffset);
+    virtual void showThermal (uint8_t* frame, int resHeight, int resWidth, int xOffset, int yOffset);
     virtual void showText (String text, int x, int y, TextSize size);
     virtual void showText (String text, int x, int y, TextSize size, DisplayColor color);
     virtual void showSymbol (int gfxChar, int x, int y);

@@ -50,3 +50,17 @@ void Display_1306::showThermal (float* frame, int resHeight, int resWidth, int x
     }
   }
 }
+
+void Display_1306::showThermal (uint8_t* frame, int resHeight, int resWidth, int xOffset, int yOffset) {
+  int hotThreshold = 27;
+
+  for (uint8_t h=0; h<resHeight; h++) {
+    for (uint8_t w=0; w<resWidth; w++) {
+      uint8_t t = frame[h*resWidth + w];
+      if (t >= hotThreshold) {
+        display->drawPixel(xOffset + w, yOffset + h, WHITE);
+      }
+    }
+  }
+}
+

@@ -129,7 +129,7 @@ bool LoRaTrans::send(uint8_t *message, int length, uint8_t address) {
 
     // send the chunk end notice with checksum if chunking
     if (chunking) {
-      unsigned long checksum = 0;
+      long checksum = 0;
       for (int i = 0; i < length; i++) {
         checksum += message[i];
       }
@@ -155,9 +155,17 @@ bool LoRaTrans::endChunking(int address, unsigned long checksum) {
 }
 
 long LoRaTrans::extractBufferChecksum () {
-  //String sChecksum = String(buf).substring(strlen(LORA_CHUNK_END_KEY));
-  return strtoul((char*)buf, NULL, 10);
+  String sChecksum = String((char*)buf).substring(strlen(LORA_CHUNK_END_KEY));
+  return strtoul(sChecksum.c_str(), NULL, 10);
   //return sChecksum.to;
+}
+
+long LoRaTrans::calculateChunkInBufferChecksum () {
+  long checksum = 0;
+  for (int i = 0; i < chunkInBufferSize; i++) {
+    checksum += chunkInBuffer[i];
+  }
+  return checksum;
 }
 
 long LoRaTrans::retrieveMessage() {
@@ -194,6 +202,7 @@ long LoRaTrans::retrieveMessage() {
 
       // Try to keep receiving messages until we hit the chunk end
       bool chunkingEnded = false;
+      bool checksumMatched = false;
       unsigned long chunkStartTime = millis();
       while (chunkingEnded == false && chunkInBufferSize < LORA_MAX_CHUNK_IN_BUFFER_SIZE && (millis() - chunkStartTime) < LORA_MAX_CHUNK_TIME_MILLIS) {
         if (hasMessage()) {
@@ -215,10 +224,11 @@ long LoRaTrans::retrieveMessage() {
 
               // check if this is the chunk end
               if (strlen(LORA_CHUNK_END_KEY) <= strlen((char*)buf) && (strncmp(LORA_CHUNK_END_KEY,(char*)buf,strlen(LORA_CHUNK_END_KEY)) == 0 )) {
+                long providedChecksum = extractBufferChecksum();
+                long calculatedChecksum = calculateChunkInBufferChecksum();
+                checksumMatched = providedChecksum = calculatedChecksum;
                 chunkingEnded = true;
-                long checksum = extractBufferChecksum();
-                logConsole("Chunk ended! Provided checksum: " + String(checksum));
-                chunkInBufferTime = millis();
+                //logConsole("Chunk ended! Provided checksum: " + String(checksum) + ", Calculated checksum: " + String(calculateChunkInBufferChecksum()));
               }
               else {
                 appendBufferToChunked (len);                
@@ -239,8 +249,9 @@ long LoRaTrans::retrieveMessage() {
         }
       }
 
-      if (chunkingEnded) {
+      if (chunkingEnded && checksumMatched) {
         logConsole("Complete chunked message size: " + String(chunkInBufferSize));
+        chunkInBufferTime = millis();
         return chunkInBufferSize;
       }
       else {

@@ -39,6 +39,7 @@ class LoRaTrans {
     bool beginChunking(int address);
     void appendBufferToChunked (int chunkSize);
     long extractBufferChecksum ();
+    long calculateChunkInBufferChecksum ();
     unsigned long chunkInBufferTime = 0;
     unsigned long messageBufferTime = 0;
 };

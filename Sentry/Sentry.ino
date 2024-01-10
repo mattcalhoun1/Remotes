@@ -5,10 +5,18 @@
 #include "Display_1331.h"
 #include "Joystick.h"
 #include "LoRaTrans.h"
+#include "LoRaCommander.h"
 
 Display* display;
 Joystick* joystick;
 LoRaTrans* lora;
+LoRaCommander* commander;
+//long nextCommandId = 0;
+long currCommandId = 0;
+
+bool awaitingResponse = false;
+long maxCommandWaitTime = 10000;// max millis to wait for a response to a command
+unsigned long currCommandStartTime = 0;
 
 void setup() {
   long start = millis();
@@ -25,6 +33,7 @@ void setup() {
   delay(100);
 
   lora = new LoRaTrans();
+  commander = new LoRaCommander(lora, LORA_ADDR_SPOTTER);
   display = new Display_1331();
   joystick = new Joystick(VRX_PIN, VRY_PIN, SW_PIN);
 }
@@ -32,29 +41,26 @@ void setup() {
 void loop() {
   if(joystick->refresh()) {
     JoystickDirection direction = joystick->getDirection();
-    display->clear();
+    /*display->clear();
     display->showText("Ok", DISPLAY_STATUS_X, DISPLAY_STATUS_Y, TextSmall, Blue);
     display->showSymbol(getDirectionSymbol(direction), 60, 20);
     //display->showText("X: " + String(joystick->getX()), 10, 5, TextSmall, Green);
     //display->showText("Y: " + String(joystick->getY()), 10, 15, TextSmall, Yellow);
+    */
 
     if (joystick->isPressed()) {
-      display->showText("*", 96, 10, TextLarge, Red);
-      if (lora->send("this is mkrzero", LORA_ADDR_SPOTTER)) {
-        logConsole("Message sent to spotter");
-      }
+      requestThermal();
     }
 
     display->repaint();
   }
 
   if (lora->hasMessage()) {
-    display->clear();
+    //display->clear();
     display->showText("Receiving...", DISPLAY_STATUS_X, DISPLAY_STATUS_Y, TextSmall, Blue);
     int messageLength = lora->retrieveMessage();
     logConsole("LORA message size: " + String(messageLength) + "!!");
     //display->showText("LORA (" + String(messageLength) + ")", 10, 25, TextSmall);
-    
     if (messageLength > 0) {
       // if it's a therml image, render it
       if (lora->getChunkInBufferTime() > lora->getMessageBufferTime()) {
@@ -64,7 +70,19 @@ void loop() {
         display->repaint();
       }
       else { //  maybe it's just a string
-        logConsole("LORA message: " + String((char*)lora->getMessageBuffer()));
+        String rawMessage = String((char*)lora->getMessageBuffer());
+        Command command = commander->extractCommand(rawMessage, lora->getLastSender());
+
+        if (command.getCommandType() == Receipt) {
+          logConsole("Got Receipt for: " + String(command.getId()));
+        }
+        else if (command.getCommandType() == Result) {
+          logConsole("Got result of: " + String(command.getId()) + " = " + String(command.getParams()));
+          awaitingResponse = false;
+        }
+        else {
+          logConsole("LORA message: " + String((char*)lora->getMessageBuffer()));
+        }
       }
     }
 
@@ -77,8 +95,27 @@ void loop() {
   }
   */
 
+  // Check if we should stop waiting for a response
+  if (awaitingResponse) {
+    if (millis() - maxCommandWaitTime > currCommandStartTime) {
+      awaitingResponse = false;
+    }
+  }
 
-  delay(100);
+  /*if (!awaitingResponse) {
+    // send a command
+  }*/
+}
+
+void requestThermal() {
+    currCommandId++;
+    Command command;
+    command.setCommandType(GetThermal);
+    command.setParams("0");
+    command.setId(currCommandId);
+    command.setRecipient(LORA_ADDR_SPOTTER);
+    commander->sendCommand(command);
+    awaitingResponse = true;
 }
 
 int getDirectionSymbol (JoystickDirection direction) {

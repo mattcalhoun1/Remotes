@@ -14,6 +14,7 @@ class LoRaTrans {
     LoRaTrans();
     bool hasMessage ();
     long retrieveMessage();
+    int getLastSender ();
     uint8_t* getMessageBuffer ();
     uint8_t* getChunkInBuffer ();
     int getChunkInBufferSize();
@@ -21,6 +22,8 @@ class LoRaTrans {
     bool broadcast(uint8_t *message, uint8_t length);
     bool send (String message, int address);
     bool send(uint8_t *message, int length, uint8_t address);
+    bool fireAndForget (String message, int address);
+    bool fireAndForget(uint8_t *message, int length, uint8_t address);
     int getLastRssi ();
     unsigned long getChunkInBufferTime ();
     unsigned long getMessageBufferTime ();
@@ -30,6 +33,7 @@ class LoRaTrans {
     RH_RF95* rfm9x;
     RHReliableDatagram* rfm9x_manager;
     uint8_t buf[LORA_RFM9X_MAX_MESSAGE_LEN];
+    int lastSender;
     uint8_t chunkInBuffer[LORA_MAX_CHUNK_IN_BUFFER_SIZE];
     int chunkInBufferSize = 0; // how many received bytes are in the buffer
     void logConsole(String msg);

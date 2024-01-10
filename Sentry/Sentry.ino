@@ -6,11 +6,13 @@
 #include "Joystick.h"
 #include "LoRaTrans.h"
 #include "LoRaCommander.h"
+#include "ThermalEncoder.h"
 
 Display* display;
 Joystick* joystick;
 LoRaTrans* lora;
 LoRaCommander* commander;
+ThermalEncoder encoder = ThermalEncoder(THERMAL_HEIGHT, THERMAL_WIDTH, false);
 //long nextCommandId = 0;
 long currCommandId = 0;
 
@@ -36,6 +38,8 @@ void setup() {
   commander = new LoRaCommander(lora, LORA_ADDR_SPOTTER);
   display = new Display_1331();
   joystick = new Joystick(VRX_PIN, VRY_PIN, SW_PIN);
+
+  showDisplayMessage("Ready");
 }
 
 void loop() {
@@ -56,8 +60,7 @@ void loop() {
   }
 
   if (lora->hasMessage()) {
-    //display->clear();
-    display->showText("Receiving...", DISPLAY_STATUS_X, DISPLAY_STATUS_Y, TextSmall, Blue);
+    showDisplayMessage("Receiving");
     int messageLength = lora->retrieveMessage();
     logConsole("LORA message size: " + String(messageLength) + "!!");
     //display->showText("LORA (" + String(messageLength) + ")", 10, 25, TextSmall);
@@ -65,8 +68,16 @@ void loop() {
       // if it's a therml image, render it
       if (lora->getChunkInBufferTime() > lora->getMessageBufferTime()) {
         display->clear();
-        display->showText("Thermal", DISPLAY_STATUS_X, DISPLAY_STATUS_Y, TextSmall, Blue);
+        showDisplayMessage("Thermal");
         display->showThermal(lora->getChunkInBuffer(), THERMAL_HEIGHT,THERMAL_WIDTH, 32, 0);
+
+        int xOffset = 18;
+        int yOffset = 0;
+        for (int r = 0; r < THERMAL_INTERPOLATED_HEIGHT; r++) {
+          float* interpolatedRow = encoder.getInterpolatedRow(lora->getChunkInBuffer(), r);
+          display->showInterpolatedThermalRow(interpolatedRow, xOffset, r + yOffset);
+        }
+
         display->repaint();
       }
       else { //  maybe it's just a string
@@ -83,9 +94,9 @@ void loop() {
         else {
           logConsole("LORA message: " + String((char*)lora->getMessageBuffer()));
         }
+        showDisplayMessage("Ready");
       }
     }
-
   }
   /*else {
     logConsole("No Lora");
@@ -105,6 +116,15 @@ void loop() {
   /*if (!awaitingResponse) {
     // send a command
   }*/
+}
+
+void clearDisplayMessage () {
+  display->clearArea(DISPLAY_STATUS_X, DISPLAY_STATUS_Y, 64, 8);
+}
+
+void showDisplayMessage (String msg) {
+  clearDisplayMessage();
+  display->showText(msg, DISPLAY_STATUS_X, DISPLAY_STATUS_Y, TextSmall, Blue);
 }
 
 void requestThermal() {

@@ -12,6 +12,10 @@ void Display_1306::clear () {
   display->display();
 }
 
+void Display_1306::clearArea (int x, int y, int width, int height) {
+  logConsole("clearArea not implemented");
+}
+
 void Display_1306::repaint () {
   display->display();
 }
@@ -51,6 +55,10 @@ void Display_1306::showThermal (float* frame, int resHeight, int resWidth, int x
   }
 }
 
+void Display_1306::showInterpolatedThermalRow (float* interpolatedRow, int xOffset, int yOffset) {
+  logConsole("interpolation display not implemented in 1306");
+}
+
 void Display_1306::showThermal (uint8_t* frame, int resHeight, int resWidth, int xOffset, int yOffset) {
   int hotThreshold = 27;
 
@@ -63,4 +71,5 @@ void Display_1306::showThermal (uint8_t* frame, int resHeight, int resWidth, int
     }
   }
 }
+
 

@@ -12,6 +12,15 @@ void Display_1331::clear () {
  // display->display();
 }
 
+void Display_1331::clearArea (int x, int y, int width, int height) {
+  for (int pixelX = x; pixelX < x + width; pixelX++) {
+    for (int pixelY = y; pixelY < y + height; pixelY++) {
+      display->drawPixel(pixelX, pixelY, BLACK);
+    }
+  }
+  logConsole("clearArea not implemented");
+}
+
 void Display_1331::repaint () {
   //display->display();
 }
@@ -39,28 +48,34 @@ void Display_1331::showText (String text, int x, int y, TextSize size, DisplayCo
   display->println(text);
 }
 
-void Display_1331::showThermal (float* frame, int resHeight, int resWidth, int xOffset, int yOffset) {
-  int hotThreshold = 27;
+void Display_1331::showInterpolatedThermalRow (float* interpolatedRow, int xOffset, int yOffset) {
+  for (int w = 0; w < THERMAL_INTERPOLATED_WIDTH; w++) {
+      float t = interpolatedRow[w];
+      display->drawPixel(xOffset + w, yOffset, get1331Color(getTemperatureColor(t)));
+  }
+}
 
+void Display_1331::showThermal (float* frame, int resHeight, int resWidth, int xOffset, int yOffset) {
   for (uint8_t h=0; h<resHeight; h++) {
     for (uint8_t w=0; w<resWidth; w++) {
       float t = frame[h*resWidth + w];
-      if (t >= hotThreshold) {
-        display->drawPixel(xOffset + w, yOffset + h, WHITE);
-      }
+      display->drawPixel(xOffset + w, yOffset + h, get1331Color(getTemperatureColor(t)));
     }
   }
 }
 
 void Display_1331::showThermal (uint8_t* frame, int resHeight, int resWidth, int xOffset, int yOffset) {
-  int hotThreshold = 27;
-
   for (uint8_t h=0; h<resHeight; h++) {
     for (uint8_t w=0; w<resWidth; w++) {
       uint8_t t = frame[h*resWidth + w];
       display->drawPixel(xOffset + w, yOffset + h, get1331Color(getTemperatureColor(t)));
     }
   }
+}
+
+DisplayColor Display_1331::getTemperatureColor(float temperature) {
+  uint8_t temp = round(temperature);
+  return getTemperatureColor(temp);
 }
 
 DisplayColor Display_1331::getTemperatureColor(uint8_t temperature) {

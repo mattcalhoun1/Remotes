@@ -18,14 +18,16 @@ class Display_1306 : public Display {
     Display_1306 ();
     virtual void showThermal (float* frame, int resHeight, int resWidth, int xOffset, int yOffset);
     virtual void showThermal (uint8_t* frame, int resHeight, int resWidth, int xOffset, int yOffset);
+    virtual void showInterpolatedThermalRow (float* interpolatedRow, int xOffset, int yOffset);
     virtual void showText (String text, int x, int y, TextSize size);
     virtual void showText (String text, int x, int y, TextSize size, DisplayColor color);
     virtual void showSymbol (int gfxChar, int x, int y);
     virtual void showSymbol (int gfxChar, int x, int y, DisplayColor color);
     virtual void clear ();
+    virtual void clearArea (int x, int y, int width, int height);
     virtual void repaint ();
 
   private:
-    Adafruit_SSD1306* display = new  Adafruit_SSD1306(-1);  // -1 = no reset pin, reset pin not used on 4-pin OLED module    
+    Adafruit_SSD1306* display = new  Adafruit_SSD1306(-1);  // -1 = no reset pin, reset pin not used on 4-pin OLED module
 };
 #endif

@@ -28,12 +28,15 @@
 #define LORA_ADDR_ACTOR 2
 #define LORA_ADDR_BROADCAST 255
 
-#define THERMAL_INTERPOLATE_BUFFER_SIZE 3072 // 48 * 32
+#define THERMAL_INTERPOLATE_BUFFER_SIZE 192
 
 #define THERMAL_ENCODE_BUFFER_SIZE 0 // no encoding/decoding needed yet
 
 #define THERMAL_WIDTH 32
 #define THERMAL_HEIGHT 24
+
+#define THERMAL_INTERPOLATED_WIDTH 64
+#define THERMAL_INTERPOLATED_HEIGHT 48
 
 // 1331 pins: sckl (SCL); mosi (SDA); cs(CS); rst (RES); dc (DC)
 #define Display_1331_SCLK 12
@@ -44,7 +47,6 @@
 
 #define DISPLAY_STATUS_X 28
 #define DISPLAY_STATUS_Y 54
-
 
 // Color definitions
 #define	BLACK           0x0000
